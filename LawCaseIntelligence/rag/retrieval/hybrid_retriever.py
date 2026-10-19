@@ -21,6 +21,12 @@ from rag.vectordb.collection_manager import (
 logger = logging.getLogger(__name__)
 
 
+
+
+
+
+
+
 def _keyword_score(query: str, text: str) -> float:
     """Simple TF-style keyword overlap score."""
     q_tokens = set(re.findall(r"\w+", query.lower()))
@@ -88,3 +94,22 @@ def hybrid_search(
 
     semantic_hits.sort(key=lambda x: x["hybrid_score"], reverse=True)
     return semantic_hits[:top_k]
+
+
+# for chacking usable chunk evidance 
+
+def has_usable_evidance(chunks) -> bool :
+    
+    if not chunks:
+        return False
+
+    for chunk in chunks :
+        if not isinstance(chunk,dict) :
+            continue
+
+        text= chunk.get("text")
+
+        if isinstance(text,str) and text.strip() :
+            return True
+    return False
+

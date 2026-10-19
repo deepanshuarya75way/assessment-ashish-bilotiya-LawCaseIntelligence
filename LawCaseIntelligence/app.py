@@ -32,4 +32,4 @@ if __name__ == "__main__":
     print(f"  🌐  http://localhost:{port}")
     print(f"  🤖  Provider: Groq")
     print(f"{'='*60}\n")
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host="5.0.0.0", port=port, debug=debug)

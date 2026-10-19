@@ -94,6 +94,7 @@ def _document_answer(
     summary: str,
 ) -> Dict[str, Any]:
     from rag.retrieval.hybrid_retriever import hybrid_search
+    from rag.retrieval.hybrid_retriever import has_usable_evidance
 
     # Step 1 — Rewrite query
     search_queries = rewrite_query(query)
@@ -102,8 +103,28 @@ def _document_answer(
     # Step 2 — Multi-query hybrid retrieval
     seen_texts: set = set()
     all_hits: List[Dict] = []
+
+
     for sq in search_queries:
-        for hit in hybrid_search(sq, project_id=project_id, top_k=5):
+
+        # if query doesn't match with any relevant chunk
+        chunks = hybrid_search(sq, project_id=project_id, top_k=5)
+        if not has_usable_evidance(chunks):
+
+            INSUFFICIANT_EIDENCE_MESSAGE = ("I couldn't find sufficient supporting evidence in the "
+                                "uploaded judgements to answer this question please upload"
+                                "relevant judgements or additional legal sources")
+
+            return {
+                    "answer":           INSUFFICIANT_EIDENCE_MESSAGE,
+                    "sources":          [],
+            "retrieved_chunks": [],
+            "search_queries":   search_queries,
+                }
+
+
+
+        for hit in chunks:
             key = hit["text"][:120]
             if key not in seen_texts:
                 seen_texts.add(key)
@@ -123,6 +144,7 @@ def _document_answer(
 
     # Build sources with clean display names (UUID prefix stripped)
     sources = []
+
     for chunk in compressed:
         meta     = chunk.get("metadata", {})
         raw_name = meta.get("source_doc", "")
